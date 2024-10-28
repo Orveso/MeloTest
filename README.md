@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://github.com/MeloNX-Emu/MeloNX">
-        <img src="https://cdn.discordapp.com/attachments/1292940840351830036/1300350019370487893/Screenshot_2024-10-28_at_06.46.25.png?ex=672084d3&is=671f3353&hm=bacefb41ab6f92e0091f6d4f3a781c0d5e144a96cd0fbae239bb93093e385e18&" alt="MeloNX Logo" width="120">
+        <img src="https://github.com/MeloNX-Emu/melonx-emu.github.io/blob/main/favicon.png?raw=true" alt="MeloNX Logo" width="120">
     </a>
 </p>
 
