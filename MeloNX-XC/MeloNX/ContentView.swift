@@ -21,16 +21,18 @@ struct ContentView: View {
     @State var debugmode: Int = 0
     
     init() {
-        SDL_SetMainReady()
-        SDL_iPhoneSetEventPump(SDL_TRUE)
-        
-        
-        if SDL_Init(SDL_INIT_VIDEO) < 0 {
-            fatalError("Unable to initialize SDL: \(String(cString: SDL_GetError()))")
-        }
-        
-        if SDL_Vulkan_LoadLibrary(nil) != 0 {
-            fatalError("Failed to load Vulkan library: \(String(cString: SDL_GetError()))")
+        DispatchQueue.main.async {
+            SDL_SetMainReady()
+            SDL_iPhoneSetEventPump(SDL_TRUE)
+            
+            
+            if SDL_Init(SDL_INIT_VIDEO) < 0 {
+                fatalError("Unable to initialize SDL: \(String(cString: SDL_GetError()))")
+            }
+            
+            if SDL_Vulkan_LoadLibrary(nil) != 0 {
+                fatalError("Failed to load Vulkan library: \(String(cString: SDL_GetError()))")
+            }
         }
     }
     
