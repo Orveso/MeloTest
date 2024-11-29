@@ -159,7 +159,7 @@ class Ryujinx {
         
         // Adding default args directly into additionalArgs
         if config.nintendoinput {
-            args.append("--correct-ons-controller")
+//            args.append("--correct-ons-controller")
         }
         
         if config.ryuLDN {
