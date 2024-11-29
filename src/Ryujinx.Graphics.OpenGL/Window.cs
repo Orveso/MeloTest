@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.PixelStore(PixelStoreParameter.UnpackAlignment, 4);
         }
 
-        public void ChangeVSyncMode(bool vsyncEnabled) { }
+        public void ChangeVSyncMode(VSyncMode vSyncMode) { }
 
         public void SetSize(int width, int height)
         {
@@ -372,6 +372,16 @@ namespace Ryujinx.Graphics.OpenGL
                         }
                         _isLinear = false;
                         _scalingFilter.Level = _scalingFilterLevel;
+
+                        RecreateUpscalingTexture();
+                        break;
+                    case ScalingFilter.Area:
+                        if (_scalingFilter is not AreaScalingFilter)
+                        {
+                            _scalingFilter?.Dispose();
+                            _scalingFilter = new AreaScalingFilter(_renderer);
+                        }
+                        _isLinear = false;
 
                         RecreateUpscalingTexture();
                         break;

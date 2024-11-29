@@ -1,4 +1,4 @@
-using Ryujinx.HLE.Ui;
+using Ryujinx.HLE.UI;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,10 +17,7 @@ namespace Ryujinx.Headless.SDL2
 
         public bool TextProcessingEnabled
         {
-            get
-            {
-                return Volatile.Read(ref _canProcessInput);
-            }
+            get => Volatile.Read(ref _canProcessInput);
 
             set
             {

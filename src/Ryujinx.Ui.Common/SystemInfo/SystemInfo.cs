@@ -1,11 +1,11 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.Ui.Common.Helper;
+using Ryujinx.UI.Common.Helper;
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 
-namespace Ryujinx.Ui.Common.SystemInfo
+namespace Ryujinx.UI.Common.SystemInfo
 {
     public class SystemInfo
     {
@@ -33,17 +33,13 @@ namespace Ryujinx.Ui.Common.SystemInfo
         public static SystemInfo Gather()
         {
             if (OperatingSystem.IsWindows())
-            {
                 return new WindowsSystemInfo();
-            }
-            else if (OperatingSystem.IsLinux())
-            {
+
+            if (OperatingSystem.IsLinux())
                 return new LinuxSystemInfo();
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
+
+            if (OperatingSystem.IsMacOS())
                 return new MacOSSystemInfo();
-            }
 
             Logger.Error?.Print(LogClass.Application, "SystemInfo unsupported on this platform");
 

@@ -79,10 +79,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 var field = fields[fieldIndex];
 
-                var cuurentFieldOffset = (int)Marshal.OffsetOf<TState>(field.Name);
+                var currentFieldOffset = (int)Marshal.OffsetOf<TState>(field.Name);
                 var nextFieldOffset = fieldIndex + 1 == fields.Length ? Unsafe.SizeOf<TState>() : (int)Marshal.OffsetOf<TState>(fields[fieldIndex + 1].Name);
 
-                int sizeOfField = nextFieldOffset - cuurentFieldOffset;
+                int sizeOfField = nextFieldOffset - currentFieldOffset;
 
                 if (fieldToDelegate.TryGetValue(field.Name, out int entryIndex))
                 {
@@ -109,7 +109,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             if (index < BlockSize)
             {
-                int groupIndex = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_registerToGroupMapping), (IntPtr)index);
+                int groupIndex = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_registerToGroupMapping), (nint)index);
                 if (groupIndex != 0)
                 {
                     groupIndex--;

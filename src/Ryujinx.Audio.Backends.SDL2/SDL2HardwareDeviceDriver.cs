@@ -20,11 +20,13 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         private readonly bool _supportSurroundConfiguration;
 
+        public float Volume { get; set; }
+
         // TODO: Add this to SDL2-CS
         // NOTE: We use a DllImport here because of marshaling issue for spec.
 #pragma warning disable SYSLIB1054
-        [DllImport("SDL2.framework/SDL2")]
-        private static extern int SDL_GetDefaultAudioInfo(IntPtr name, out SDL_AudioSpec spec, int isCapture);
+        [DllImport("SDL2")]
+        private static extern int SDL_GetDefaultAudioInfo(nint name, out SDL_AudioSpec spec, int isCapture);
 #pragma warning restore SYSLIB1054
 
         public SDL2HardwareDeviceDriver()
@@ -35,7 +37,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             SDL2Driver.Instance.Initialize();
 
-            int res = SDL_GetDefaultAudioInfo(IntPtr.Zero, out var spec, 0);
+            int res = SDL_GetDefaultAudioInfo(nint.Zero, out var spec, 0);
 
             if (res != 0)
             {
@@ -48,6 +50,8 @@ namespace Ryujinx.Audio.Backends.SDL2
             {
                 _supportSurroundConfiguration = spec.channels >= 6;
             }
+
+            Volume = 1f;
         }
 
         public static bool IsSupported => IsSupportedInternal();
@@ -74,7 +78,7 @@ namespace Ryujinx.Audio.Backends.SDL2
             return _pauseEvent;
         }
 
-        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount, float volume)
+        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
         {
             if (channelCount == 0)
             {
@@ -91,7 +95,7 @@ namespace Ryujinx.Audio.Backends.SDL2
                 throw new NotImplementedException("Input direction is currently not implemented on SDL2 backend!");
             }
 
-            SDL2HardwareDeviceSession session = new(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
+            SDL2HardwareDeviceSession session = new(this, memoryManager, sampleFormat, sampleRate, channelCount);
 
             _sessions.TryAdd(session, 0);
 
@@ -132,7 +136,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             desired.callback = callback;
 
-            uint device = SDL_OpenAudioDevice(IntPtr.Zero, 0, ref desired, out SDL_AudioSpec got, 0);
+            uint device = SDL_OpenAudioDevice(nint.Zero, 0, ref desired, out SDL_AudioSpec got, 0);
 
             if (device == 0)
             {

@@ -97,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             if (titleId == 0)
             {
-                context.Device.UiHandler.ExecuteProgram(context.Device, ProgramSpecifyKind.RestartProgram, titleId);
+                context.Device.UIHandler.ExecuteProgram(context.Device, ProgramSpecifyKind.RestartProgram, titleId);
             }
             else
             {
@@ -524,7 +524,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm, new { kind, value });
 
-            context.Device.UiHandler.ExecuteProgram(context.Device, kind, value);
+            context.Device.UIHandler.ExecuteProgram(context.Device, kind, value);
 
             return ResultCode.Success;
         }
@@ -659,7 +659,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
                 if (string.IsNullOrWhiteSpace(filePath))
                 {
-                    throw new InvalidSystemResourceException("JIT (010000000000003B) system title not found! The JIT will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx#requirements for more information)");
+                    throw new InvalidSystemResourceException("JIT (010000000000003B) system title not found! The JIT will not work, provide the system archive to fix this error. (See https://github.com/GreemDev/Ryujinx#requirements for more information)");
                 }
 
                 context.Device.LoadNca(filePath);

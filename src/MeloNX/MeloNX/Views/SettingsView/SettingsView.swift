@@ -12,21 +12,29 @@ struct SettingsView: View {
     @Binding var MoltenVKSettings: [MoltenVKSettings]
     
     var memoryManagerModes = [
+        ("HostMappedUnsafe", "Host Unchecked (fastest, unstable / unsafe)"),
         ("HostMapped", "Host (fast)"),
-        ("HostMappedUnsafe", "Host Unchecked (fast, unstable / unsafe)"),
-        ("SoftwarePageTable", "Software (slow)"),
+        ("SoftwarePageTable", "Software")
+    ]
+    
+    var vsyncModes = [
+        ("Switch", "Switch"),
+        ("Unbound", "Unbound"),
     ]
     
     @AppStorage("RyuDemoControls") var ryuDemo: Bool = false
-    
     @AppStorage("MTL_HUD_ENABLED") var metalHUDEnabled: Bool = false
     
     var body: some View {
         ScrollView {
             VStack {
-                Section(header: Title("Graphics and Performance")) {
+                Section(header: Text("Graphics and Performance").bold()) {
                     Toggle("Ryujinx Fullscreen", isOn: $config.fullscreen)
-                    Toggle("Disable V-Sync", isOn: $config.disableVSync)
+                    Picker("V-Sync", selection: $config.vsync) {
+                        ForEach(vsyncModes, id: \.0) { key, displayName in
+                            Text(displayName).tag(key)
+                        }
+                    }
                     Toggle("Disable Shader Cache", isOn: $config.disableShaderCache)
                     Toggle("Enable Texture Recompression", isOn: $config.enableTextureRecompression)
                     Toggle("Disable Docked Mode", isOn: $config.disableDockedMode)
@@ -41,18 +49,19 @@ struct SettingsView: View {
                         }
                 }
                 
-                Section(header: Title("Input Settings")) {
+                Section(header: Text("Input Settings").bold()) {
                     Toggle("List Input IDs", isOn: $config.listinputids)
                     Toggle("Nintendo Controller Layout", isOn: $config.nintendoinput)
                     Toggle("Ryujinx Demo On-Screen Controller", isOn: $ryuDemo)
                     // Toggle("Host Mapped Memory", isOn: $config.hostMappedMemory)
+                    Toggle("Disable Docked Mode", isOn: $config.disableDockedMode)
                 }
                 
-                Section(header: Title("Logging Settings")) {
+                Section(header: Text("Logging Settings").bold()) {
                     Toggle("Enable Debug Logs", isOn: $config.debuglogs)
                     Toggle("Enable Trace Logs", isOn: $config.tracelogs)
                 }
-                Section(header: Title("CPU Mode")) {
+                Section(header: Text("CPU Mode").bold()) {
                     HStack {
                         Spacer()
                         Picker("Memory Manager Mode", selection: $config.memoryManagerMode) {
@@ -66,7 +75,7 @@ struct SettingsView: View {
                 
                 
                 
-                Section(header: Title("Additional Settings")) {
+                Section(header: Text("Additional Settings")) {
                     //TextField("Game Path", text: $config.gamepath)
                     
                     Text("PageSize \(String(Int(getpagesize())))")
@@ -81,8 +90,8 @@ struct SettingsView: View {
                     ))
                 }
             }
-            .padding()
         }
+        .padding()
         .onAppear {
             if let configs = loadSettings() {
                 self.config = configs
@@ -162,22 +171,5 @@ extension NumberFormatter {
         formatter.minimumFractionDigits = 2
         formatter.allowsFloats = true
         return formatter
-    }
-}
-
-
-struct Title: View {
-    let string: String
-    
-    init(_ string: String) {
-        self.string = string
-    }
-    
-    var body: some View {
-        VStack {
-            Text(string)
-                .font(.title2)
-            Divider()
-        }
     }
 }

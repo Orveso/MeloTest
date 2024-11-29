@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         public NvHostAsGpuDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, ulong owner) : base(context, owner)
         {
-            _asContext = new AddressSpaceContext(context.Device.Gpu.CreateMemoryManager(owner));
+            _asContext = new AddressSpaceContext(context.Device.Gpu.CreateMemoryManager(owner, context.Device.Memory.Size));
             _memoryAllocator = new NvMemoryAllocator();
         }
 
@@ -266,7 +266,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
             if (size == 0)
             {
-                size = (uint)map.Size;
+                size = map.Size;
             }
 
             NvInternalResult result = NvInternalResult.Success;

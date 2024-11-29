@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
             return metaLoader;
         }
 
-        public static ProcessResult Load(this IFileSystem exeFs, Switch device, BlitStruct<ApplicationControlProperty> nacpData, MetaLoader metaLoader, bool isHomebrew = false)
+        public static ProcessResult Load(this IFileSystem exeFs, Switch device, BlitStruct<ApplicationControlProperty> nacpData, MetaLoader metaLoader, byte programIndex, bool isHomebrew = false)
         {
             ulong programId = metaLoader.GetProgramId();
 
@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                 Logger.Warning?.Print(LogClass.Ptc, "Detected unsupported ExeFs modifications. PTC disabled.");
             }
 
-            string programName = "";
+            string programName = string.Empty;
 
             if (!isHomebrew && programId > 0x010000000000FFFF)
             {
@@ -119,6 +119,7 @@ namespace Ryujinx.HLE.Loaders.Processes.Extensions
                 true,
                 programName,
                 metaLoader.GetProgramId(),
+                programIndex,
                 null,
                 nsoExecutables);
 

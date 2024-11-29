@@ -8,6 +8,7 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
+using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Logging.Targets;
 using Ryujinx.Common.SystemInterop;
@@ -19,6 +20,7 @@ using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Graphics.Vulkan;
+using Ryujinx.Graphics.Vulkan.MoltenVK;
 using Ryujinx.Headless.SDL2.OpenGL;
 using Ryujinx.Headless.SDL2.Vulkan;
 using Ryujinx.HLE;
@@ -95,12 +97,13 @@ namespace Ryujinx.Headless.SDL2
 
         static void Main(string[] args)
         {
+            Silk.NET.Core.Loader.SearchPathContainer.Platform = Silk.NET.Core.Loader.UnderlyingPlatform.MacOS;
+
+            Version = "1";
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();
 
             Silk.NET.Core.Loader.SearchPathContainer.Platform = Silk.NET.Core.Loader.UnderlyingPlatform.MacOS;
-
-            Version = ReleaseInformation.GetVersion();
 
             if (!OperatingSystem.IsIOS())
             {
@@ -127,16 +130,15 @@ namespace Ryujinx.Headless.SDL2
                 };
             }
 
-            var result = Parser.Default.ParseArguments<Options>(args)
-             .WithParsed(options =>
-             {
-                  Load(options);  // Load is called with the parsed options
-             })
-              .WithNotParsed(errors => errors.Output());
+            if (OperatingSystem.IsMacOS())
+            {
+                MVKInitialization.InitializeResolver();
+            }
 
-
+            Parser.Default.ParseArguments<Options>(args)
+            .WithParsed(Load)
+            .WithNotParsed(errors => errors.Output());
         }
-
 
         [UnmanagedCallersOnly(EntryPoint = "get_game_controllers")]
         public static unsafe IntPtr GetGamepadList()
@@ -170,7 +172,7 @@ namespace Ryujinx.Headless.SDL2
             return ptr;
         }
 
-        private static InputConfig HandlePlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index, Options option)
+        private static InputConfig HandlePlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
         {
             if (inputId == null)
             {
@@ -270,9 +272,8 @@ namespace Ryujinx.Headless.SDL2
                     };
                 }
                 else
-                {   
-                    bool isAppleController = gamepadName.Contains("Apple") ? option.OnScreenCorrespond : false;
-                    bool isNintendoStyle = gamepadName.Contains("Nintendo") || isAppleController;
+                {
+                    bool isNintendoStyle = gamepadName.Contains("Nintendo");
 
                     config = new StandardControllerInputConfig
                     {
@@ -468,9 +469,9 @@ namespace Ryujinx.Headless.SDL2
             _enableKeyboard = option.EnableKeyboard;
             _enableMouse = option.EnableMouse;
 
-            static void LoadPlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index, Options option)
+            static void LoadPlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
             {
-                InputConfig inputConfig = HandlePlayerConfiguration(inputProfileName, inputId, index, option);
+                InputConfig inputConfig = HandlePlayerConfiguration(inputProfileName, inputId, index);
 
                 if (inputConfig != null)
                 {
@@ -478,15 +479,15 @@ namespace Ryujinx.Headless.SDL2
                 }
             }
 
-            LoadPlayerConfiguration(option.InputProfile1Name, option.InputId1, PlayerIndex.Player1, option);
-            LoadPlayerConfiguration(option.InputProfile2Name, option.InputId2, PlayerIndex.Player2, option);
-            LoadPlayerConfiguration(option.InputProfile3Name, option.InputId3, PlayerIndex.Player3, option);
-            LoadPlayerConfiguration(option.InputProfile4Name, option.InputId4, PlayerIndex.Player4, option);
-            LoadPlayerConfiguration(option.InputProfile5Name, option.InputId5, PlayerIndex.Player5, option);
-            LoadPlayerConfiguration(option.InputProfile6Name, option.InputId6, PlayerIndex.Player6, option);
-            LoadPlayerConfiguration(option.InputProfile7Name, option.InputId7, PlayerIndex.Player7, option);
-            LoadPlayerConfiguration(option.InputProfile8Name, option.InputId8, PlayerIndex.Player8, option);
-            LoadPlayerConfiguration(option.InputProfileHandheldName, option.InputIdHandheld, PlayerIndex.Handheld, option);
+            LoadPlayerConfiguration(option.InputProfile1Name, option.InputId1, PlayerIndex.Player1);
+            LoadPlayerConfiguration(option.InputProfile2Name, option.InputId2, PlayerIndex.Player2);
+            LoadPlayerConfiguration(option.InputProfile3Name, option.InputId3, PlayerIndex.Player3);
+            LoadPlayerConfiguration(option.InputProfile4Name, option.InputId4, PlayerIndex.Player4);
+            LoadPlayerConfiguration(option.InputProfile5Name, option.InputId5, PlayerIndex.Player5);
+            LoadPlayerConfiguration(option.InputProfile6Name, option.InputId6, PlayerIndex.Player6);
+            LoadPlayerConfiguration(option.InputProfile7Name, option.InputId7, PlayerIndex.Player7);
+            LoadPlayerConfiguration(option.InputProfile8Name, option.InputId8, PlayerIndex.Player8);
+            LoadPlayerConfiguration(option.InputProfileHandheldName, option.InputIdHandheld, PlayerIndex.Handheld);
 
             if (_inputConfiguration.Count == 0)
             {
@@ -505,11 +506,24 @@ namespace Ryujinx.Headless.SDL2
 
             if (!option.DisableFileLog)
             {
-                Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(ReleaseInformation.GetBaseApplicationDirectory(), "file"),
-                    1000,
-                    AsyncLogTargetOverflowAction.Block
-                ));
+                string logDir = AppDataManager.LogsDirPath;
+                FileStream logFile = null;
+
+                if (!string.IsNullOrEmpty(logDir))
+                {
+                    logFile = FileLogTarget.PrepareLogFile(logDir);
+                }
+                if (logFile != null)
+                {
+                    Logger.AddTarget(new AsyncLogTargetWrapper(
+                        new FileLogTarget("file", logFile),
+                        1000
+                    ));
+                }
+                else
+                {
+                    Logger.Error?.Print(LogClass.Application, "No writable log directory available. Make sure either the Logs directory, Application Data, or the Ryujinx directory is writable.");
+                }
             }
 
             // Setup graphics configuration
@@ -562,8 +576,8 @@ namespace Ryujinx.Headless.SDL2
         private static WindowBase CreateWindow(Options options)
         {
             return options.GraphicsBackend == GraphicsBackend.Vulkan
-                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursorMode)
-                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursorMode);
+                ? new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursorMode, options.IgnoreControllerApplet)
+                : new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, options.EnableMouse, options.HideCursorMode, options.IgnoreControllerApplet);
         }
 
         private static IRenderer CreateRenderer(Options options, WindowBase window)
@@ -616,11 +630,11 @@ namespace Ryujinx.Headless.SDL2
                 _userChannelPersistence,
                 renderer,
                 new SDL2HardwareDeviceDriver(),
-                options.ExpandRAM ? MemoryConfiguration.MemoryConfiguration6GiB : MemoryConfiguration.MemoryConfiguration4GiB,
+                options.DramSize,
                 window,
                 options.SystemLanguage,
                 options.SystemRegion,
-                !options.DisableVSync,
+                options.VSyncMode,
                 !options.DisableDockedMode,
                 !options.DisablePTC,
                 options.EnableInternetAccess,
@@ -634,7 +648,11 @@ namespace Ryujinx.Headless.SDL2
                 options.AudioVolume,
                 options.UseHypervisor ?? true,
                 options.MultiplayerLanInterfaceId,
-                Common.Configuration.Multiplayer.MultiplayerMode.LdnMitm);
+                Common.Configuration.Multiplayer.MultiplayerMode.Disabled,
+                false,
+                "",
+                "",
+                options.CustomVSyncInterval);
 
             return new Switch(configuration);
         }
@@ -787,9 +805,6 @@ namespace Ryujinx.Headless.SDL2
             }
 
             SetupProgressHandler();
-
-            Translator.IsReadyForTranslation.Reset();
-
             ExecutionEntrypoint();
 
             return true;

@@ -49,7 +49,7 @@ class Ryujinx {
         var listinputids: Bool
         var fullscreen: Bool
         var memoryManagerMode: String
-        var disableVSync: Bool
+        var vsync: String
         var disableShaderCache: Bool
         var disableDockedMode: Bool
         var enableTextureRecompression: Bool
@@ -60,14 +60,14 @@ class Ryujinx {
              inputids: [String] = [],
              debuglogs: Bool = false,
              tracelogs: Bool = false,
-             listinputids: Bool = false,
-             fullscreen: Bool = true,
-             memoryManagerMode: String = "HostMapped",
-             disableVSync: Bool = false,
-             disableShaderCache: Bool = false,
-             disableDockedMode: Bool = false,
              nintendoinput: Bool = true,
              enableInternet: Bool = false,
+             listinputids: Bool = false,
+             fullscreen: Bool = true,
+             memoryManagerMode: String = "HostMappedUnsafe",
+             vsync: String = "Switch",
+             disableShaderCache: Bool = false,
+             disableDockedMode: Bool = false,
              enableTextureRecompression: Bool = true,
              additionalArgs: [String] = [],
              resscale: Float = 1.00
@@ -76,17 +76,17 @@ class Ryujinx {
             self.inputids = inputids
             self.debuglogs = debuglogs
             self.tracelogs = tracelogs
+            self.nintendoinput = nintendoinput
+            self.enableInternet = enableInternet
             self.listinputids = listinputids
             self.fullscreen = fullscreen
-            self.disableVSync = disableVSync
+            self.vsync = vsync
             self.disableShaderCache = disableShaderCache
             self.disableDockedMode = disableDockedMode
             self.enableTextureRecompression = enableTextureRecompression
             self.additionalArgs = additionalArgs
             self.memoryManagerMode = memoryManagerMode
             self.resscale = resscale
-            self.nintendoinput = nintendoinput
-            self.enableInternet = enableInternet
         }
     }
 
@@ -157,17 +157,15 @@ class Ryujinx {
             args.append(contentsOf: ["--resolution-scale", String(config.resscale)])
         }
         
+        // Adding default args directly into additionalArgs
         if config.nintendoinput {
             args.append("--correct-ons-controller")
         }
+        
         if config.enableInternet {
             args.append("--enable-internet-connection")
         }
         
-        // Adding default args directly into additionalArgs
-        if config.disableVSync {
-            args.append("--disable-vsync")
-        }
         if config.disableShaderCache {
             args.append("--disable-shader-cache")
         }

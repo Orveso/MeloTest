@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.OpenGL
         private VertexArray _vertexArray;
         private Framebuffer _framebuffer;
 
-        private IntPtr _indexBaseOffset;
+        private nint _indexBaseOffset;
 
         private DrawElementsType _elementsType;
 
@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private readonly Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
 
-        private readonly (TextureBase, Format)[] _images;
+        private readonly TextureBase[] _images;
         private TextureBase _unit0Texture;
         private Sampler _unit0Sampler;
 
@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.OpenGL
             _fragmentOutputMap = uint.MaxValue;
             _componentMasks = uint.MaxValue;
 
-            _images = new (TextureBase, Format)[SavedImages];
+            _images = new TextureBase[SavedImages];
 
             _tfbs = new BufferHandle[Constants.MaxTransformFeedbackBuffers];
             _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
@@ -358,7 +358,7 @@ namespace Ryujinx.Graphics.OpenGL
                     break;
             }
 
-            IntPtr indexBaseOffset = _indexBaseOffset + firstIndex * indexElemSize;
+            nint indexBaseOffset = _indexBaseOffset + firstIndex * indexElemSize;
 
             if (_primitiveType == PrimitiveType.Quads && !HwCapabilities.SupportsQuads)
             {
@@ -396,7 +396,7 @@ namespace Ryujinx.Graphics.OpenGL
         private void DrawQuadsIndexedImpl(
             int indexCount,
             int instanceCount,
-            IntPtr indexBaseOffset,
+            nint indexBaseOffset,
             int indexElemSize,
             int firstVertex,
             int firstInstance)
@@ -447,7 +447,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
             else
             {
-                IntPtr[] indices = new IntPtr[quadsCount];
+                nint[] indices = new nint[quadsCount];
 
                 int[] counts = new int[quadsCount];
 
@@ -475,7 +475,7 @@ namespace Ryujinx.Graphics.OpenGL
         private void DrawQuadStripIndexedImpl(
             int indexCount,
             int instanceCount,
-            IntPtr indexBaseOffset,
+            nint indexBaseOffset,
             int indexElemSize,
             int firstVertex,
             int firstInstance)
@@ -483,7 +483,7 @@ namespace Ryujinx.Graphics.OpenGL
             // TODO: Instanced rendering.
             int quadsCount = (indexCount - 2) / 2;
 
-            IntPtr[] indices = new IntPtr[quadsCount];
+            nint[] indices = new nint[quadsCount];
 
             int[] counts = new int[quadsCount];
 
@@ -516,7 +516,7 @@ namespace Ryujinx.Graphics.OpenGL
         private void DrawIndexedImpl(
             int indexCount,
             int instanceCount,
-            IntPtr indexBaseOffset,
+            nint indexBaseOffset,
             int firstVertex,
             int firstInstance)
         {
@@ -589,7 +589,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
 
-            GL.DrawElementsIndirect(_primitiveType, _elementsType, (IntPtr)indirectBuffer.Offset);
+            GL.DrawElementsIndirect(_primitiveType, _elementsType, (nint)indirectBuffer.Offset);
 
             _vertexArray.RestoreIndexBuffer();
 
@@ -614,8 +614,8 @@ namespace Ryujinx.Graphics.OpenGL
             GL.MultiDrawElementsIndirectCount(
                 _primitiveType,
                 (All)_elementsType,
-                (IntPtr)indirectBuffer.Offset,
-                (IntPtr)parameterBuffer.Offset,
+                (nint)indirectBuffer.Offset,
+                (nint)parameterBuffer.Offset,
                 maxDrawCount,
                 stride);
 
@@ -636,7 +636,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
 
-            GL.DrawArraysIndirect(_primitiveType, (IntPtr)indirectBuffer.Offset);
+            GL.DrawArraysIndirect(_primitiveType, (nint)indirectBuffer.Offset);
 
             PostDraw();
         }
@@ -656,8 +656,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.MultiDrawArraysIndirectCount(
                 _primitiveType,
-                (IntPtr)indirectBuffer.Offset,
-                (IntPtr)parameterBuffer.Offset,
+                (nint)indirectBuffer.Offset,
+                (nint)parameterBuffer.Offset,
                 maxDrawCount,
                 stride);
 
@@ -935,11 +935,11 @@ namespace Ryujinx.Graphics.OpenGL
             SetFrontFace(_frontFace = frontFace.Convert());
         }
 
-        public void SetImage(int binding, ITexture texture, Format imageFormat)
+        public void SetImage(ShaderStage stage, int binding, ITexture texture)
         {
             if ((uint)binding < SavedImages)
             {
-                _images[binding] = (texture as TextureBase, imageFormat);
+                _images[binding] = texture as TextureBase;
             }
 
             if (texture == null)
@@ -950,7 +950,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             TextureBase texBase = (TextureBase)texture;
 
-            SizedInternalFormat format = FormatTable.GetImageFormat(imageFormat);
+            SizedInternalFormat format = FormatTable.GetImageFormat(texBase.Format);
 
             if (format != 0)
             {
@@ -958,11 +958,21 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        public void SetImageArray(ShaderStage stage, int binding, IImageArray array)
+        {
+            (array as ImageArray).Bind(binding);
+        }
+
+        public void SetImageArraySeparate(ShaderStage stage, int setIndex, IImageArray array)
+        {
+            throw new NotSupportedException("OpenGL does not support descriptor sets.");
+        }
+
         public void SetIndexBuffer(BufferRange buffer, IndexType type)
         {
             _elementsType = type.Convert();
 
-            _indexBaseOffset = (IntPtr)buffer.Offset;
+            _indexBaseOffset = (nint)buffer.Offset;
 
             EnsureVertexArray();
 
@@ -1117,7 +1127,7 @@ namespace Ryujinx.Graphics.OpenGL
                 prg.Bind();
             }
 
-            if (prg.HasFragmentShader && _fragmentOutputMap != (uint)prg.FragmentOutputMap)
+            if (_fragmentOutputMap != (uint)prg.FragmentOutputMap)
             {
                 _fragmentOutputMap = (uint)prg.FragmentOutputMap;
 
@@ -1302,6 +1312,15 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        public void SetTextureArray(ShaderStage stage, int binding, ITextureArray array)
+        {
+            (array as TextureArray).Bind(binding);
+        }
+
+        public void SetTextureArraySeparate(ShaderStage stage, int setIndex, ITextureArray array)
+        {
+            throw new NotSupportedException("OpenGL does not support descriptor sets.");
+        }
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
         {
@@ -1431,11 +1450,11 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (buffer.Handle == BufferHandle.Null)
                 {
-                    GL.BindBufferRange(target, assignment.Binding, 0, IntPtr.Zero, 0);
+                    GL.BindBufferRange(target, assignment.Binding, 0, nint.Zero, 0);
                     continue;
                 }
 
-                GL.BindBufferRange(target, assignment.Binding, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+                GL.BindBufferRange(target, assignment.Binding, buffer.Handle.ToInt32(), (nint)buffer.Offset, buffer.Size);
             }
         }
 
@@ -1603,11 +1622,11 @@ namespace Ryujinx.Graphics.OpenGL
         {
             for (int i = 0; i < SavedImages; i++)
             {
-                (TextureBase texBase, Format imageFormat) = _images[i];
+                TextureBase texBase = _images[i];
 
                 if (texBase != null)
                 {
-                    SizedInternalFormat format = FormatTable.GetImageFormat(imageFormat);
+                    SizedInternalFormat format = FormatTable.GetImageFormat(texBase.Format);
 
                     if (format != 0)
                     {

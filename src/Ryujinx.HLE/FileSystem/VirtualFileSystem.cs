@@ -132,7 +132,7 @@ namespace Ryujinx.HLE.FileSystem
 
             if (systemPath.StartsWith(baseSystemPath))
             {
-                string rawPath = systemPath.Replace(baseSystemPath, "");
+                string rawPath = systemPath.Replace(baseSystemPath, string.Empty);
                 int firstSeparatorOffset = rawPath.IndexOf(Path.DirectorySeparatorChar);
 
                 if (firstSeparatorOffset == -1)
@@ -186,7 +186,12 @@ namespace Ryujinx.HLE.FileSystem
 
         public void InitializeFsServer(LibHac.Horizon horizon, out HorizonClient fsServerClient)
         {
-            LocalFileSystem serverBaseFs = new(AppDataManager.BaseDirPath);
+            LocalFileSystem serverBaseFs = new(useUnixTimeStamps: true);
+            Result result = serverBaseFs.Initialize(AppDataManager.BaseDirPath, LocalFileSystem.PathMode.DefaultCaseSensitivity, ensurePathExists: true);
+            if (result.IsFailure())
+            {
+                throw new HorizonResultException(result, "Error creating LocalFileSystem.");
+            }
 
             fsServerClient = horizon.CreatePrivilegedHorizonClient();
             var fsServer = new FileSystemServer(fsServerClient);
@@ -624,8 +629,8 @@ namespace Ryujinx.HLE.FileSystem
         }
 
         private static readonly ExtraDataFixInfo[] _systemExtraDataFixInfo =
-        {
-            new ExtraDataFixInfo()
+        [
+            new()
             {
                 StaticSaveDataId = 0x8000000000000030,
                 OwnerId = 0x010000000000001F,
@@ -633,15 +638,15 @@ namespace Ryujinx.HLE.FileSystem
                 DataSize = 0x10000,
                 JournalSize = 0x10000,
             },
-            new ExtraDataFixInfo()
+            new()
             {
                 StaticSaveDataId = 0x8000000000001040,
                 OwnerId = 0x0100000000001009,
                 Flags = SaveDataFlags.None,
                 DataSize = 0xC000,
                 JournalSize = 0xC000,
-            },
-        };
+            }
+        ];
 
         public void Dispose()
         {

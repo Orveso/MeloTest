@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             unsafe
             {
-                DeviceName = Marshal.PtrToStringAnsi((IntPtr)physicalDeviceProperties.DeviceName);
+                DeviceName = Marshal.PtrToStringAnsi((nint)physicalDeviceProperties.DeviceName);
             }
 
             uint propertiesCount = 0;
@@ -50,13 +50,40 @@ namespace Ryujinx.Graphics.Vulkan
 
             unsafe
             {
-                DeviceExtensions = extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToImmutableHashSet();
+                DeviceExtensions = extensionProperties.Select(x => Marshal.PtrToStringAnsi((nint)x.ExtensionName)).ToImmutableHashSet();
             }
         }
 
         public string Id => $"0x{PhysicalDeviceProperties.VendorID:X}_0x{PhysicalDeviceProperties.DeviceID:X}";
 
         public bool IsDeviceExtensionPresent(string extension) => DeviceExtensions.Contains(extension);
+
+        public unsafe bool TryGetPhysicalDeviceDriverPropertiesKHR(Vk api, out PhysicalDeviceDriverPropertiesKHR res)
+        {
+            if (!IsDeviceExtensionPresent("VK_KHR_driver_properties"))
+            {
+                res = default;
+
+                return false;
+            }
+
+            PhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties = new()
+            {
+                SType = StructureType.PhysicalDeviceDriverPropertiesKhr
+            };
+
+            PhysicalDeviceProperties2 physicalDeviceProperties2 = new()
+            {
+                SType = StructureType.PhysicalDeviceProperties2,
+                PNext = &physicalDeviceDriverProperties
+            };
+
+            api.GetPhysicalDeviceProperties2(PhysicalDevice, &physicalDeviceProperties2);
+
+            res = physicalDeviceDriverProperties;
+
+            return true;
+        }
 
         public DeviceInfo ToDeviceInfo()
         {

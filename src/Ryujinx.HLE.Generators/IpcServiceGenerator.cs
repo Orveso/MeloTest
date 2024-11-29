@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
@@ -13,25 +13,7 @@ namespace Ryujinx.HLE.Generators
             var syntaxReceiver = (ServiceSyntaxReceiver)context.SyntaxReceiver;
             CodeGenerator generator = new CodeGenerator();
 
-            generator.EnterScope($"namespace Ryujinx.rd");
-            generator.EnterScope($"public class Rd");
-
-            generator.AppendLine($"public string rd = \"\"\"");
-            foreach (var className in syntaxReceiver.Types)
-            {
-                if (className.Modifiers.Any(SyntaxKind.AbstractKeyword) || className.Modifiers.Any(SyntaxKind.PrivateKeyword))
-                    continue;
-
-                var name = GetFullName(className, context).Replace("global::", "");
-                generator.AppendLine($"<Type Name=\"{name}\"  Dynamic=\"Required All\" />");
-            }
-            generator.AppendLine($"\"\"\";");
-
-            generator.LeaveScope();
-            generator.LeaveScope();
-            context.AddSource($"rd.g.cs", generator.ToString());
-            generator = new CodeGenerator();
-
+            generator.AppendLine("#nullable enable");
             generator.AppendLine("using System;");
             generator.EnterScope($"namespace Ryujinx.HLE.HOS.Services.Sm");
             generator.EnterScope($"partial class IUserInterface");
@@ -41,10 +23,10 @@ namespace Ryujinx.HLE.Generators
             {
                 if (className.Modifiers.Any(SyntaxKind.AbstractKeyword) || className.Modifiers.Any(SyntaxKind.PrivateKeyword) || !className.AttributeLists.Any(x => x.Attributes.Any(y => y.ToString().StartsWith("Service"))))
                     continue;
-                var name = GetFullName(className, context).Replace("global::", "");
+                var name = GetFullName(className, context).Replace("global::", string.Empty);
                 if (!name.StartsWith("Ryujinx.HLE.HOS.Services"))
                     continue;
-                var constructors = className.ChildNodes().Where(x => x.IsKind(SyntaxKind.ConstructorDeclaration)).Select(y => y as ConstructorDeclarationSyntax);
+                var constructors = className.ChildNodes().Where(x => x.IsKind(SyntaxKind.ConstructorDeclaration)).Select(y => y as ConstructorDeclarationSyntax).ToArray();
 
                 if (!constructors.Any(x => x.ParameterList.Parameters.Count >= 1))
                     continue;
@@ -77,6 +59,7 @@ namespace Ryujinx.HLE.Generators
 
             generator.LeaveScope();
             generator.LeaveScope();
+            generator.AppendLine("#nullable disable");            
             context.AddSource($"IUserInterface.g.cs", generator.ToString());
         }
 
@@ -86,6 +69,7 @@ namespace Ryujinx.HLE.Generators
 
             return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         }
+
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new ServiceSyntaxReceiver());

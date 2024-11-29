@@ -1,3 +1,5 @@
+using ARMeilleure.Common;
+using ARMeilleure.Memory;
 using ARMeilleure.Signal;
 using ARMeilleure.Translation;
 using NUnit.Framework;
@@ -53,7 +55,10 @@ namespace Ryujinx.Tests.Memory
         private static void EnsureTranslator()
         {
             // Create a translator, as one is needed to register the signal handler or emit methods.
-            _translator ??= new Translator(new JitMemoryAllocator(), new MockMemoryManager(), true);
+            _translator ??= new Translator(
+                new JitMemoryAllocator(), 
+                new MockMemoryManager(), 
+                AddressTable<ulong>.CreateForArm(true, MemoryManagerType.SoftwarePageTable));
         }
 
         [Test]
@@ -237,7 +242,7 @@ namespace Ryujinx.Tests.Memory
                 mainMemory.MapView(backing, 0, 0, vaSize);
 
                 var writeFunc = TestMethods.GenerateDebugNativeWriteLoop();
-                IntPtr writePtr = mainMemory.GetPointer(vaSize - 0x1000, 4);
+                nint writePtr = mainMemory.GetPointer(vaSize - 0x1000, 4);
 
                 Thread testThread = new(() =>
                 {
@@ -330,7 +335,7 @@ namespace Ryujinx.Tests.Memory
 
             fixed (void* localMap = &state.LocalCounts)
             {
-                var getOrReserve = TestMethods.GenerateDebugThreadLocalMapGetOrReserve((IntPtr)localMap);
+                var getOrReserve = TestMethods.GenerateDebugThreadLocalMapGetOrReserve((nint)localMap);
 
                 for (int i = 0; i < ThreadLocalMap<int>.MapSize; i++)
                 {
@@ -388,14 +393,14 @@ namespace Ryujinx.Tests.Memory
                     {
                         rwLock.AcquireReaderLock();
 
-                        int originalValue = Thread.VolatileRead(ref value);
+                        int originalValue = Volatile.Read(ref value);
 
                         count++;
 
                         // Spin a bit.
                         for (int i = 0; i < 100; i++)
                         {
-                            if (Thread.VolatileRead(ref readersAllowed) == 0)
+                            if (Volatile.Read(ref readersAllowed) == 0)
                             {
                                 error = true;
                                 running = false;
@@ -403,7 +408,7 @@ namespace Ryujinx.Tests.Memory
                         }
 
                         // Should not change while the lock is held.
-                        if (Thread.VolatileRead(ref value) != originalValue)
+                        if (Volatile.Read(ref value) != originalValue)
                         {
                             error = true;
                             running = false;

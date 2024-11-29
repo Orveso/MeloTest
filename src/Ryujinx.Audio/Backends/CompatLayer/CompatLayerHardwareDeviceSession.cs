@@ -39,11 +39,6 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             _realSession.PrepareToClose();
         }
 
-        public override ulong GetSampleCount(int dataSize)
-        {
-            return _realSession.GetSampleCount(dataSize);
-        }
-
         public override void QueueBuffer(AudioBuffer buffer)
         {
             SampleFormat realSampleFormat = _realSession.RequestedSampleFormat;
@@ -124,7 +119,6 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             AudioBuffer fakeBuffer = new()
             {
                 BufferTag = buffer.BufferTag,
-                HostTag = buffer.HostTag,
                 DataPointer = buffer.DataPointer,
                 DataSize = (ulong)samples.Length,
             };

@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
-namespace Ryujinx.Ui.LocaleGenerator
+namespace Ryujinx.UI.LocaleGenerator
 {
     [Generator]
     public class LocaleGenerator : IIncrementalGenerator
@@ -15,7 +15,7 @@ namespace Ryujinx.Ui.LocaleGenerator
 
             context.RegisterSourceOutput(contents, (spc, content) =>
             {
-                var lines = content.Split('\n').Where(x => x.Trim().StartsWith("\"")).Select(x => x.Split(':')[0].Trim().Replace("\"", ""));
+                var lines = content.Split('\n').Where(x => x.Trim().StartsWith("\"")).Select(x => x.Split(':')[0].Trim().Replace("\"", string.Empty));
                 StringBuilder enumSourceBuilder = new();
                 enumSourceBuilder.AppendLine("namespace Ryujinx.Ava.Common.Locale;");
                 enumSourceBuilder.AppendLine("internal enum LocaleKeys");

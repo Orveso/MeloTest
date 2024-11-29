@@ -10,8 +10,8 @@ namespace Ryujinx.Graphics.Vulkan.Queries
     class BufferedQuery : IDisposable
     {
         private const int MaxQueryRetries = 5000;
-        private const long DefaultValue = -1;
-        private const long DefaultValueInt = 0xFFFFFFFF;
+        private const long DefaultValue = unchecked((long)0xFFFFFFFEFFFFFFFE);
+        private const long DefaultValueInt = 0xFFFFFFFE;
         private const ulong HighMask = 0xFFFFFFFF00000000;
 
         private readonly Vk _api;
@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         private QueryPool _queryPool;
 
         private readonly BufferHolder _buffer;
-        private readonly IntPtr _bufferMap;
+        private readonly nint _bufferMap;
         private readonly CounterType _type;
         private readonly bool _result32Bit;
         private readonly bool _isSupported;
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                     PipelineStatistics = flags,
                 };
 
-                gd.Api.CreateQueryPool(device, queryPoolCreateInfo, null, out _queryPool).ThrowOnError();
+                gd.Api.CreateQueryPool(device, in queryPoolCreateInfo, null, out _queryPool).ThrowOnError();
             }
 
             var buffer = gd.BufferManager.Create(gd, sizeof(long), forConditionalRendering: true);

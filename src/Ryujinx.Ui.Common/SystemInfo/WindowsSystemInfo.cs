@@ -4,7 +4,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace Ryujinx.Ui.Common.SystemInfo
+namespace Ryujinx.UI.Common.SystemInfo
 {
     [SupportedOSPlatform("windows")]
     partial class WindowsSystemInfo : SystemInfo
@@ -40,7 +40,7 @@ namespace Ryujinx.Ui.Common.SystemInfo
                 }
             }
 
-            return Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER").Trim();
+            return Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER")?.Trim();
         }
 
         [StructLayout(LayoutKind.Sequential)]

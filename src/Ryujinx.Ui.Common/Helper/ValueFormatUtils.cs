@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 
-namespace Ryujinx.Ui.Common.Helper
+namespace Ryujinx.UI.Common.Helper
 {
     public static class ValueFormatUtils
     {
@@ -75,13 +75,7 @@ namespace Ryujinx.Ui.Common.Helper
         {
             culture ??= CultureInfo.CurrentCulture;
 
-            if (!utcDateTime.HasValue)
-            {
-                // In the Avalonia UI, this is turned into a localized version of "Never" by LocalizedNeverConverter.
-                return "Never";
-            }
-
-            return utcDateTime.Value.ToLocalTime().ToString(culture);
+            return utcDateTime?.ToLocalTime().ToString(culture);
         }
 
         /// <summary>

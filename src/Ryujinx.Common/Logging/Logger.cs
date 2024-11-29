@@ -3,6 +3,7 @@ using Ryujinx.Common.SystemInterop;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -22,6 +23,9 @@ namespace Ryujinx.Common.Logging
 
         public readonly struct Log
         {
+            private static readonly string _homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            private static readonly string _homeDirRedacted = Path.Combine(Directory.GetParent(_homeDir)!.FullName, "[redacted]");
+
             internal readonly LogLevel Level;
 
             internal Log(LogLevel level)
@@ -34,7 +38,7 @@ namespace Ryujinx.Common.Logging
             {
                 if (_enabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, "", message)));
+                    Updated?.Invoke(null, new LogEventArgs(Level, _time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, string.Empty, message)));
                 }
             }
 
@@ -100,7 +104,12 @@ namespace Ryujinx.Common.Logging
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static string FormatMessage(LogClass logClass, string caller, string message) => $"{logClass} {caller}: {message}";
+            private static string FormatMessage(LogClass logClass, string caller, string message)
+            {
+                message = message.Replace(_homeDir, _homeDirRedacted);
+
+                return $"{logClass} {caller}: {message}";
+            }
         }
 
         public static Log? Debug { get; private set; }
@@ -203,9 +212,7 @@ namespace Ryujinx.Common.Logging
             foreach (var log in logs)
             {
                 if (log.HasValue)
-                {
                     levels.Add(log.Value.Level);
-                }
             }
 
             return levels;
@@ -224,7 +231,8 @@ namespace Ryujinx.Common.Logging
                 case LogLevel.AccessLog : AccessLog = enabled ? new Log(LogLevel.AccessLog) : new Log?(); break;
                 case LogLevel.Stub      : Stub      = enabled ? new Log(LogLevel.Stub)      : new Log?(); break;
                 case LogLevel.Trace     : Trace     = enabled ? new Log(LogLevel.Trace)     : new Log?(); break;
-                default: throw new ArgumentException("Unknown Log Level");
+                case LogLevel.Notice    : break;
+                default: throw new ArgumentException("Unknown Log Level", nameof(logLevel));
 #pragma warning restore IDE0055
             }
         }

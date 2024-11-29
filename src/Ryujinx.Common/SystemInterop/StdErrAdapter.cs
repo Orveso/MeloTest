@@ -19,7 +19,7 @@ namespace Ryujinx.Common.SystemInterop
 
         public StdErrAdapter()
         {
-            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) // TODO: iOS?
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
                 RegisterPosix();
             }
@@ -27,7 +27,6 @@ namespace Ryujinx.Common.SystemInterop
 
         [SupportedOSPlatform("linux")]
         [SupportedOSPlatform("macos")]
-        [SupportedOSPlatform("ios")]
         private void RegisterPosix()
         {
             const int StdErrFileno = 2;
@@ -45,7 +44,6 @@ namespace Ryujinx.Common.SystemInterop
 
         [SupportedOSPlatform("linux")]
         [SupportedOSPlatform("macos")]
-        [SupportedOSPlatform("ios")]
         private async Task EventWorkerAsync(CancellationToken cancellationToken)
         {
             using TextReader reader = new StreamReader(_pipeReader, leaveOpen: true);
@@ -94,7 +92,6 @@ namespace Ryujinx.Common.SystemInterop
 
         [SupportedOSPlatform("linux")]
         [SupportedOSPlatform("macos")]
-        [SupportedOSPlatform("ios")]
         private static Stream CreateFileDescriptorStream(int fd)
         {
             return new FileStream(

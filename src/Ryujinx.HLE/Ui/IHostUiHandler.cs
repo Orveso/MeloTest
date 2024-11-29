@@ -1,16 +1,16 @@
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 
-namespace Ryujinx.HLE.Ui
+namespace Ryujinx.HLE.UI
 {
-    public interface IHostUiHandler
+    public interface IHostUIHandler
     {
         /// <summary>
         /// Displays an Input Dialog box to the user and blocks until text is entered.
         /// </summary>
         /// <param name="userText">Text that the user entered. Set to `null` on internal errors</param>
         /// <returns>True when OK is pressed, False otherwise. Also returns True on internal errors</returns>
-        bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText);
+        bool DisplayInputDialog(SoftwareKeyboardUIArgs args, out string userText);
 
         /// <summary>
         /// Displays a Message Dialog box to the user and blocks until it is closed.
@@ -22,10 +22,10 @@ namespace Ryujinx.HLE.Ui
         /// Displays a Message Dialog box specific to Controller Applet and blocks until it is closed.
         /// </summary>
         /// <returns>True when OK is pressed, False otherwise.</returns>
-        bool DisplayMessageDialog(ControllerAppletUiArgs args);
+        bool DisplayMessageDialog(ControllerAppletUIArgs args);
 
         /// <summary>
-        /// Tell the UI that we need to transisition to another program.
+        /// Tell the UI that we need to transition to another program.
         /// </summary>
         /// <param name="device">The device instance.</param>
         /// <param name="kind">The program kind.</param>
@@ -46,6 +46,6 @@ namespace Ryujinx.HLE.Ui
         /// <summary>
         /// Gets fonts and colors used by the host.
         /// </summary>
-        IHostUiTheme HostUiTheme { get; }
+        IHostUITheme HostUITheme { get; }
     }
 }

@@ -1,5 +1,4 @@
 using Ryujinx.Audio.Backends.CompatLayer;
-using Ryujinx.Audio.Backends.DelayLayer;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Graphics.Gpu;
@@ -8,7 +7,7 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.Loaders.Processes;
-using Ryujinx.HLE.Ui;
+using Ryujinx.HLE.UI;
 using Ryujinx.Memory;
 using System;
 
@@ -26,9 +25,13 @@ namespace Ryujinx.HLE
         public PerformanceStatistics Statistics { get; }
         public Hid Hid { get; }
         public TamperMachine TamperMachine { get; }
-        public IHostUiHandler UiHandler { get; }
+        public IHostUIHandler UIHandler { get; }
 
-        public bool EnableDeviceVsync { get; set; } = true;
+        public VSyncMode VSyncMode { get; set; } = VSyncMode.Switch;
+        public bool CustomVSyncIntervalEnabled { get; set; } = false;
+        public int CustomVSyncInterval { get; set; }
+
+        public long TargetVSyncInterval { get; set; } = 60;
 
         public bool IsFrameAvailable => Gpu.Window.IsFrameAvailable;
 
@@ -40,14 +43,14 @@ namespace Ryujinx.HLE
 
             Configuration = configuration;
             FileSystem = Configuration.VirtualFileSystem;
-            UiHandler = Configuration.HostUiHandler;
+            UIHandler = Configuration.HostUIHandler;
 
             MemoryAllocationFlags memoryAllocationFlags = configuration.MemoryManagerMode == MemoryManagerMode.SoftwarePageTable
                 ? MemoryAllocationFlags.Reserve
                 : MemoryAllocationFlags.Reserve | MemoryAllocationFlags.Mirrorable;
 
 #pragma warning disable IDE0055 // Disable formatting
-            AudioDeviceDriver = AddAudioCompatLayers(Configuration.AudioDeviceDriver);
+            AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(Configuration.AudioDeviceDriver);
             Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), memoryAllocationFlags);
             Gpu               = new GpuContext(Configuration.GpuRenderer);
             System            = new HOS.Horizon(this);
@@ -56,59 +59,19 @@ namespace Ryujinx.HLE
             Processes         = new ProcessLoader(this);
             TamperMachine     = new TamperMachine();
 
+            System.InitializeServices();
             System.State.SetLanguage(Configuration.SystemLanguage);
             System.State.SetRegion(Configuration.Region);
 
-            EnableDeviceVsync                       = Configuration.EnableVsync;
+            VSyncMode                               = Configuration.VSyncMode;
+            CustomVSyncInterval                     = Configuration.CustomVSyncInterval;
             System.State.DockedMode                 = Configuration.EnableDockedMode;
             System.PerformanceState.PerformanceMode = System.State.DockedMode ? PerformanceMode.Boost : PerformanceMode.Default;
             System.EnablePtc                        = Configuration.EnablePtc;
             System.FsIntegrityCheckLevel            = Configuration.FsIntegrityCheckLevel;
             System.GlobalAccessLogMode              = Configuration.FsGlobalAccessLogMode;
+            UpdateVSyncInterval();
 #pragma warning restore IDE0055
-        }
-
-        private IHardwareDeviceDriver AddAudioCompatLayers(IHardwareDeviceDriver driver)
-        {
-            ulong sampleDelay = OperatingSystem.IsIOS() ? 1024ul : 0;
-            driver = new CompatLayerHardwareDeviceDriver(driver);
-
-            if (sampleDelay > 0)
-            {
-                driver = new DelayLayerHardwareDeviceDriver(driver, sampleDelay);
-            }
-
-            return driver;
-        }
-
-        public bool LoadCart(string exeFsDir, string romFsFile = null)
-        {
-            return Processes.LoadUnpackedNca(exeFsDir, romFsFile);
-        }
-
-        public bool LoadXci(string xciFile)
-        {
-            return Processes.LoadXci(xciFile);
-        }
-
-        public bool LoadNca(string ncaFile)
-        {
-            return Processes.LoadNca(ncaFile);
-        }
-
-        public bool LoadNsp(string nspFile)
-        {
-            return Processes.LoadNsp(nspFile);
-        }
-
-        public bool LoadProgram(string fileName)
-        {
-            return Processes.LoadNxo(fileName);
-        }
-
-        public bool WaitFifo()
-        {
-            return Gpu.GPFifo.WaitForCommands();
         }
 
         public void ProcessFrame()
@@ -118,40 +81,50 @@ namespace Ryujinx.HLE
             Gpu.GPFifo.DispatchCalls();
         }
 
-        public bool ConsumeFrameAvailable()
+        public void IncrementCustomVSyncInterval()
         {
-            return Gpu.Window.ConsumeFrameAvailable();
+            CustomVSyncInterval += 1;
+            UpdateVSyncInterval();
         }
 
-        public void PresentFrame(Action swapBuffersCallback)
+        public void DecrementCustomVSyncInterval()
         {
-            Gpu.Window.Present(swapBuffersCallback);
+            CustomVSyncInterval -= 1;
+            UpdateVSyncInterval();
         }
 
-        public void SetVolume(float volume)
+        public void UpdateVSyncInterval()
         {
-            System.SetVolume(Math.Clamp(volume, 0, 1));
+            switch (VSyncMode)
+            {
+                case VSyncMode.Custom:
+                    TargetVSyncInterval = CustomVSyncInterval;
+                    break;
+                case VSyncMode.Switch:
+                    TargetVSyncInterval = 60;
+                    break;
+                case VSyncMode.Unbounded:
+                    TargetVSyncInterval = 1;
+                    break;
+            }
         }
 
-        public float GetVolume()
-        {
-            return System.GetVolume();
-        }
+        public bool LoadCart(string exeFsDir, string romFsFile = null) => Processes.LoadUnpackedNca(exeFsDir, romFsFile);
+        public bool LoadXci(string xciFile, ulong applicationId = 0) => Processes.LoadXci(xciFile, applicationId);
+        public bool LoadNca(string ncaFile) => Processes.LoadNca(ncaFile);
+        public bool LoadNsp(string nspFile, ulong applicationId = 0) => Processes.LoadNsp(nspFile, applicationId);
+        public bool LoadProgram(string fileName) => Processes.LoadNxo(fileName);
 
-        public void EnableCheats()
-        {
-            ModLoader.EnableCheats(Processes.ActiveApplication.ProgramId, TamperMachine);
-        }
+        public void SetVolume(float volume) => AudioDeviceDriver.Volume = Math.Clamp(volume, 0f, 1f);
+        public float GetVolume() => AudioDeviceDriver.Volume;
+        public bool IsAudioMuted() => AudioDeviceDriver.Volume == 0;
 
-        public bool IsAudioMuted()
-        {
-            return System.GetVolume() == 0;
-        }
+        public void EnableCheats() => ModLoader.EnableCheats(Processes.ActiveApplication.ProgramId, TamperMachine);
 
-        public void DisposeGpu()
-        {
-            Gpu.Dispose();
-        }
+        public bool WaitFifo() => Gpu.GPFifo.WaitForCommands();
+        public bool ConsumeFrameAvailable() => Gpu.Window.ConsumeFrameAvailable();
+        public void PresentFrame(Action swapBuffersCallback) => Gpu.Window.Present(swapBuffersCallback);
+        public void DisposeGpu() => Gpu.Dispose();
 
         public void Dispose()
         {

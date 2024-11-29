@@ -12,16 +12,9 @@ namespace Ryujinx.Input.SDL2
 {
     class SDL2Keyboard : IKeyboard
     {
-        private class ButtonMappingEntry
+        private readonly record struct ButtonMappingEntry(GamepadButtonInputId To, Key From)
         {
-            public readonly GamepadButtonInputId To;
-            public readonly Key From;
-
-            public ButtonMappingEntry(GamepadButtonInputId to, Key from)
-            {
-                To = to;
-                From = from;
-            }
+            public bool IsValid => To is not GamepadButtonInputId.Unbound && From is not Key.Unbound;
         }
 
         private readonly object _userMappingLock = new();
@@ -232,7 +225,7 @@ namespace Ryujinx.Input.SDL2
 
             unsafe
             {
-                IntPtr statePtr = SDL_GetKeyboardState(out int numKeys);
+                nint statePtr = SDL_GetKeyboardState(out int numKeys);
 
                 rawKeyboardState = new ReadOnlySpan<byte>((byte*)statePtr, numKeys);
             }
