@@ -45,7 +45,7 @@ class Ryujinx {
         var debuglogs: Bool
         var tracelogs: Bool
         var nintendoinput: Bool
-        var enableInternet: Bool
+        var ryuLDN: Bool
         var listinputids: Bool
         var fullscreen: Bool
         var memoryManagerMode: String
@@ -61,7 +61,7 @@ class Ryujinx {
              debuglogs: Bool = false,
              tracelogs: Bool = false,
              nintendoinput: Bool = true,
-             enableInternet: Bool = false,
+             ryuLDN: Bool = false,
              listinputids: Bool = false,
              fullscreen: Bool = true,
              memoryManagerMode: String = "HostMappedUnsafe",
@@ -77,7 +77,7 @@ class Ryujinx {
             self.debuglogs = debuglogs
             self.tracelogs = tracelogs
             self.nintendoinput = nintendoinput
-            self.enableInternet = enableInternet
+            self.ryuLDN = ryuLDN
             self.listinputids = listinputids
             self.fullscreen = fullscreen
             self.vsync = vsync
@@ -162,8 +162,8 @@ class Ryujinx {
             args.append("--correct-ons-controller")
         }
         
-        if config.enableInternet {
-            args.append("--enable-internet-connection")
+        if config.ryuLDN {
+            args.append("--lan-interface-id LdnRyu")
         }
         
         if config.disableShaderCache {

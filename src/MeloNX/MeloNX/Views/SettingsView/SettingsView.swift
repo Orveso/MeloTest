@@ -61,6 +61,7 @@ struct SettingsView: View {
                     Toggle("Enable Debug Logs", isOn: $config.debuglogs)
                     Toggle("Enable Trace Logs", isOn: $config.tracelogs)
                 }
+                
                 Section(header: Text("CPU Mode").bold()) {
                     HStack {
                         Spacer()
@@ -73,7 +74,9 @@ struct SettingsView: View {
                     }
                 }
                 
-                
+                Section(header: Text("Network").bold()) {
+                    Toggle("Enable Ryujinx LDN", isOn: $config.ryuLDN)
+                }
                 
                 Section(header: Text("Additional Settings")) {
                     //TextField("Game Path", text: $config.gamepath)
