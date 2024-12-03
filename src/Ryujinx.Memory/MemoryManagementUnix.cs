@@ -63,6 +63,12 @@ namespace Ryujinx.Memory
                 throw new SystemException(Marshal.GetLastPInvokeErrorMessage());
             }
 
+
+            if (OperatingSystem.IsIOS() && forJit)
+            {
+                MachJitWorkaround.ReallocateAreaWithOwnership(ptr, (int)size);
+            }
+
             if (!_allocations.TryAdd(ptr, size))
             {
                 // This should be impossible, kernel shouldn't return an already mapped address.
@@ -76,7 +82,7 @@ namespace Ryujinx.Memory
         {
             MmapProts prot = MmapProts.PROT_READ | MmapProts.PROT_WRITE;
 
-            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14) && forJit)
+            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14) || OperatingSystem.IsIOS() && forJit)
             {
                 prot |= MmapProts.PROT_EXEC;
             }
