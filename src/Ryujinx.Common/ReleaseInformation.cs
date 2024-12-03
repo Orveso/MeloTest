@@ -35,7 +35,12 @@ namespace Ryujinx.Common
         
         public static bool IsReleaseBuild => IsValid && ReleaseChannelName.Equals(ReleaseChannel);
 
-        public static string Version => IsValid ? BuildVersion : Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        public static string Version => 
+    IsValid 
+    ? BuildVersion 
+    : Assembly.GetEntryAssembly()?
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+        .InformationalVersion ?? "iOS";
 
         public static string GetChangelogUrl(Version currentVersion, Version newVersion) =>
             IsCanaryBuild 
