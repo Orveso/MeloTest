@@ -36,6 +36,9 @@ namespace Ryujinx.Ava.Common.Locale
             var localeLanguageCode = !string.IsNullOrEmpty(ConfigurationState.Instance.UI.LanguageCode.Value) ?
                 ConfigurationState.Instance.UI.LanguageCode.Value : CultureInfo.CurrentCulture.Name.Replace('-', '_');
 
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
             // Load en_US as default, if the target language translation is missing or incomplete.
             LoadDefaultLanguage();
             LoadLanguage(localeLanguageCode);

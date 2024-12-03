@@ -135,11 +135,13 @@ namespace Ryujinx.Common
         private static (Assembly, string) ResolveManifestPath(string filename)
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
             var segments = filename.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
 
             if (segments.Length >= 2)
             {
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                foreach (var assembly in System.Runtime.Loader.AssemblyLoadContext.Default.Assemblies)
                 {
                     if (assembly.GetName().Name == segments[0])
                     {

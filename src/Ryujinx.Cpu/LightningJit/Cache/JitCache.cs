@@ -15,7 +15,7 @@ namespace Ryujinx.Cpu.LightningJit.Cache
 
         private const int CodeAlignment = 4; // Bytes.
         private const int CacheSize = 2047 * 1024 * 1024;
-
+        private const int CacheSizeIOS = 512 * 1024 * 1024;
         private static ReservedRegion _jitRegion;
         private static JitCacheInvalidation _jitCacheInvalidator;
 
@@ -44,9 +44,9 @@ namespace Ryujinx.Cpu.LightningJit.Cache
                     return;
                 }
 
-                _jitRegion = new ReservedRegion(allocator, CacheSize);
+                _jitRegion = new ReservedRegion(allocator, (ulong)(OperatingSystem.IsIOS() ? CacheSizeIOS : CacheSize));
 
-                if (!OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS())
+                if (!OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS() && !OperatingSystem.IsIOS())
                 {
                     _jitCacheInvalidator = new JitCacheInvalidation(allocator);
                 }
@@ -67,7 +67,14 @@ namespace Ryujinx.Cpu.LightningJit.Cache
 
                 nint funcPtr = _jitRegion.Pointer + funcOffset;
 
-                if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                if (OperatingSystem.IsIOS())
+                {
+                    code.CopyTo(new Span<byte>((void*)funcPtr, code.Length));
+                    ReprotectAsExecutable(funcOffset, code.Length);
+
+                    JitSupportDarwinAot.Invalidate(funcPtr, (ulong)code.Length);
+                }
+                else if (OperatingSystem.IsMacOS() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                 {
                     unsafe
                     {
@@ -101,6 +108,11 @@ namespace Ryujinx.Cpu.LightningJit.Cache
 
         public static void Unmap(nint pointer)
         {
+            if (OperatingSystem.IsIOS())
+            {
+                return;
+            }
+
             lock (_lock)
             {
                 Debug.Assert(_initialized);
@@ -153,7 +165,14 @@ namespace Ryujinx.Cpu.LightningJit.Cache
 
         private static int AlignCodeSize(int codeSize)
         {
-            return checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
+            int alignment = CodeAlignment;
+
+            if (OperatingSystem.IsIOS())
+            {
+                alignment = 0x4000;
+            }
+
+            return checked(codeSize + (alignment - 1)) & ~(alignment - 1);
         }
 
         private static void Add(int offset, int size)
