@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4E6715ED2CFEEB6D00425F0C /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E80AA622CD7122800029585 /* GameController.framework */; };
-		4E80AA212CD705DD00029585 /* SDL in Frameworks */ = {isa = PBXBuildFile; productRef = 4E80AA202CD705DD00029585 /* SDL */; };
+		4E8BE4EC2D16C3F300BE08EA /* SwiftUIJoystick in Frameworks */ = {isa = PBXBuildFile; productRef = 4E8BE4EB2D16C3F300BE08EA /* SwiftUIJoystick */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +62,7 @@
 		4E6715F12CFEEB6E00425F0C /* Exceptions for "MeloNX" folder in "Embed Libraries" phase from "MeloNX" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
+				"Dependencies/Dynamic Libraries/Ryujinx.Headless.SDL2.dylib" = (CodeSignOnCopy, );
 				"Dependencies/Dynamic Libraries/libMoltenVK.dylib" = (CodeSignOnCopy, );
 				"Dependencies/Dynamic Libraries/libavcodec.dylib" = (CodeSignOnCopy, );
 				"Dependencies/Dynamic Libraries/libavutil.dylib" = (CodeSignOnCopy, );
@@ -81,6 +82,7 @@
 				"Dependencies/Dynamic Libraries/libavcodec.dylib",
 				"Dependencies/Dynamic Libraries/libavutil.dylib",
 				"Dependencies/Dynamic Libraries/libMoltenVK.dylib",
+				"Dependencies/Dynamic Libraries/Ryujinx.Headless.SDL2.dylib",
 				Dependencies/XCFrameworks/libavcodec.xcframework,
 				Dependencies/XCFrameworks/libavfilter.xcframework,
 				Dependencies/XCFrameworks/libavformat.xcframework,
@@ -122,8 +124,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E8BE4EC2D16C3F300BE08EA /* SwiftUIJoystick in Frameworks */,
 				4E6715ED2CFEEB6D00425F0C /* GameController.framework in Frameworks */,
-				4E80AA212CD705DD00029585 /* SDL in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -194,7 +196,7 @@
 			);
 			name = MeloNX;
 			packageProductDependencies = (
-				4E80AA202CD705DD00029585 /* SDL */,
+				4E8BE4EB2D16C3F300BE08EA /* SwiftUIJoystick */,
 			);
 			productName = MeloNX;
 			productReference = 4E80A98D2CD6F54500029585 /* MeloNX.app */;
@@ -279,7 +281,7 @@
 			mainGroup = 4E80A9842CD6F54500029585;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				4E80AA1F2CD705DD00029585 /* XCRemoteSwiftPackageReference "SwiftSDL2" */,
+				4E8BE4EA2D16C3F300BE08EA /* XCRemoteSwiftPackageReference "SwiftUIJoystick" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4E80A98E2CD6F54500029585 /* Products */;
@@ -837,21 +839,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4E80AA1F2CD705DD00029585 /* XCRemoteSwiftPackageReference "SwiftSDL2" */ = {
+		4E8BE4EA2D16C3F300BE08EA /* XCRemoteSwiftPackageReference "SwiftUIJoystick" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ctreffs/SwiftSDL2";
+			repositoryURL = "https://github.com/michael94ellis/SwiftUIJoystick";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.4.1;
+				minimumVersion = 1.5.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4E80AA202CD705DD00029585 /* SDL */ = {
+		4E8BE4EB2D16C3F300BE08EA /* SwiftUIJoystick */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4E80AA1F2CD705DD00029585 /* XCRemoteSwiftPackageReference "SwiftSDL2" */;
-			productName = SDL;
+			package = 4E8BE4EA2D16C3F300BE08EA /* XCRemoteSwiftPackageReference "SwiftUIJoystick" */;
+			productName = SwiftUIJoystick;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

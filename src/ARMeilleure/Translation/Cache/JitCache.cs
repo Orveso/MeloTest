@@ -80,7 +80,6 @@ namespace ARMeilleure.Translation.Cache
                 
                 if (OperatingSystem.IsIOS())
                 {
-                    ReprotectAsWritable(funcOffset, code.Length);
                     Marshal.Copy(code, 0, funcPtr, code.Length);
                     ReprotectAsExecutable(funcOffset, code.Length);
 
