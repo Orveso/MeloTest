@@ -52,6 +52,7 @@ class Ryujinx {
         var fullscreen: Bool
         var memoryManagerMode: String
         var disableShaderCache: Bool
+        var hypervisor: Bool
         var disableDockedMode: Bool
         var enableTextureRecompression: Bool
         var additionalArgs: [String]
@@ -70,7 +71,8 @@ class Ryujinx {
              enableInternet: Bool = false,
              enableTextureRecompression: Bool = true,
              additionalArgs: [String] = [],
-             resscale: Float = 1.00
+             resscale: Float = 1.00,
+             hypervisor: Bool = false
         ) {
             self.gamepath = gamepath
             self.inputids = inputids
@@ -86,6 +88,7 @@ class Ryujinx {
             self.resscale = resscale
             self.nintendoinput = nintendoinput
             self.enableInternet = enableInternet
+            self.hypervisor = hypervisor
         }
     }
 
@@ -169,6 +172,10 @@ class Ryujinx {
         
         
         // args.append("--disable-vsync")
+        
+        if config.hypervisor {
+            args.append("--use-hypervisor")
+        }
         
         
         if config.resscale != 1.0 {

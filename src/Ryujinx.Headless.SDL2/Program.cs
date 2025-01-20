@@ -235,7 +235,7 @@ namespace Ryujinx.Headless.SDL2
             var result = Parser.Default.ParseArguments<Options>(args)
              .WithParsed(options =>
              {
-                  Load(options);  // Load is called with the parsed options
+                  Load(options);
              })
               .WithNotParsed(errors => errors.Output());
 
@@ -1306,7 +1306,7 @@ namespace Ryujinx.Headless.SDL2
                 options.IgnoreMissingServices,
                 options.AspectRatio,
                 options.AudioVolume,
-                options.UseHypervisor ?? false,
+                options.UseHypervisor,
                 options.MultiplayerLanInterfaceId,
                 Common.Configuration.Multiplayer.MultiplayerMode.LdnMitm);
 

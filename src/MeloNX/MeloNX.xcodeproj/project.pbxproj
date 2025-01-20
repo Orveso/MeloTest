@@ -27,6 +27,8 @@
 		4E0DED342D05695D00FEF007 /* SwiftUIJoystick in Frameworks */ = {isa = PBXBuildFile; productRef = 4E0DED332D05695D00FEF007 /* SwiftUIJoystick */; };
 		4E4854022D138D7600A446A6 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E80AA622CD7122800029585 /* GameController.framework */; };
 		4EA5AE822D16807500AD0B9F /* SwiftSVG in Frameworks */ = {isa = PBXBuildFile; productRef = 4EA5AE812D16807500AD0B9F /* SwiftSVG */; };
+		4EA894EB2D3E3DC700FABB01 /* Ryujinx.Headless.SDL2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BD43C6282D1B2514003BBC42 /* Ryujinx.Headless.SDL2.dylib */; };
+		4EA894EC2D3E3DC700FABB01 /* Ryujinx.Headless.SDL2.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = BD43C6282D1B2514003BBC42 /* Ryujinx.Headless.SDL2.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		5650564B2D2A758600C8BB1E /* dotnet.xcconfig.example in Resources */ = {isa = PBXBuildFile; fileRef = 5650564A2D2A758600C8BB1E /* dotnet.xcconfig.example */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +63,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				4EA894EC2D3E3DC700FABB01 /* Ryujinx.Headless.SDL2.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,6 +83,7 @@
 		565056492D2A756A00C8BB1E /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"Dependencies/Dynamic Libraries/Ryujinx.Headless.SDL2.dylib",
 				Info.plist,
 			);
 			target = 4E80A98C2CD6F54500029585 /* MeloNX */;
@@ -90,12 +94,12 @@
 		5650564D2D2A75B300C8BB1E /* PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
-				"Dependencies/Dynamic Libraries/Ryujinx.Headless.SDL2.dylib" = (
-					CodeSignOnCopy,
-				);
 				"Dependencies/Dynamic Libraries/SoftwareKeyboard.framework" = (
 					CodeSignOnCopy,
 					RemoveHeadersOnCopy,
+				);
+				"Dependencies/Dynamic Libraries/libMoltenVK.dylib" = (
+					CodeSignOnCopy,
 				);
 				"Dependencies/Dynamic Libraries/libavcodec.dylib" = (
 					CodeSignOnCopy,
@@ -148,7 +152,7 @@
 			membershipExceptions = (
 				"Dependencies/Dynamic Libraries/libavcodec.dylib",
 				"Dependencies/Dynamic Libraries/libavutil.dylib",
-				"Dependencies/Dynamic Libraries/Ryujinx.Headless.SDL2.dylib",
+				"Dependencies/Dynamic Libraries/libMoltenVK.dylib",
 				"Dependencies/Dynamic Libraries/SoftwareKeyboard.framework",
 				Dependencies/XCFrameworks/libavcodec.xcframework,
 				Dependencies/XCFrameworks/libavfilter.xcframework,
@@ -178,6 +182,7 @@
 				4E4854022D138D7600A446A6 /* GameController.framework in Frameworks */,
 				4E0DED342D05695D00FEF007 /* SwiftUIJoystick in Frameworks */,
 				4EA5AE822D16807500AD0B9F /* SwiftSVG in Frameworks */,
+				4EA894EB2D3E3DC700FABB01 /* Ryujinx.Headless.SDL2.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -622,6 +627,8 @@
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 				);
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -813,6 +820,9 @@
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Core/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
@@ -852,6 +862,8 @@
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 				);
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1043,6 +1055,9 @@
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Core/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
+					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",
 					"$(PROJECT_DIR)/MeloNX/Dependencies/Dynamic\\ Libraries",

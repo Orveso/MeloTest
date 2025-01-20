@@ -67,7 +67,6 @@ struct SettingsView: View {
                     }
                     .tint(.blue)
                     
-                    
                                                         
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
@@ -229,6 +228,30 @@ struct SettingsView: View {
                             labelWithIcon("Memory Manager Mode", iconName: "gearshape")
                         }
                     }
+                    
+                    if let cpuInfo = getCPUInfo(), cpuInfo.hasPrefix("Apple M") {
+                        if #available (iOS 16.4, *), (false) {
+                            Toggle(isOn: .constant(false)) {
+                                labelWithIcon("Hypervisor", iconName: "bolt.fill")
+                            }
+                            .tint(.blue)
+                            .disabled(true)
+                            .onAppear() {
+                                print("CPU Info: \(cpuInfo)")
+                            }
+                        } else {
+                            Toggle(isOn: $config.hypervisor) {
+                                labelWithIcon("Hypervisor", iconName: "bolt.fill")
+                            }
+                            .tint(.blue)
+                            .onAppear() {
+                                print("CPU Info: \(cpuInfo)")
+                                
+                            }
+                        }
+                        
+                    }
+
                 } header: {
                     Text("CPU Mode")
                         .font(.title3.weight(.semibold))
@@ -335,6 +358,16 @@ struct SettingsView: View {
         }
     }
     
+    func getCPUInfo() -> String? {
+        let device = MTLCreateSystemDefaultDevice()
+        
+        let gpu = device?.name
+        print("GPU: " + (gpu ?? ""))
+        print(config.hypervisor)
+        return gpu
+    }
+
+    
     func saveSettings() {
 #if targetEnvironment(simulator)
         
@@ -399,6 +432,8 @@ struct SettingsView: View {
         .font(.body)
     }
 }
+
+
 
 
 struct SVGView: UIViewRepresentable {
