@@ -111,6 +111,9 @@ As Said in FAQ:
    - Scroll down and enable the "TrollStore JIT" toggle
    - Profit
 
+## Documentation
+
+If you are planning to contribute or just want to learn more about this project please read through our [documentation](docs/README.md).
 
 ### Free Developer Account (Xcode)
 

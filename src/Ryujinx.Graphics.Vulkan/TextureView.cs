@@ -800,7 +800,6 @@ namespace Ryujinx.Graphics.Vulkan
             return fullResult;
         }
 
-
         /// <inheritdoc/>
         public void SetData(MemoryOwner<byte> data)
         {

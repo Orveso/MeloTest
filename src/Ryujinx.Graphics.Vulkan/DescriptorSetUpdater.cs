@@ -699,27 +699,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_dirty.HasFlag(DirtyFlags.Texture))
             {
-                if (true)
+                if (program.UpdateTexturesWithoutTemplate)
                 {
-                    try
-                    {
-                        UpdateAndBind(cbs, program, PipelineBase.TextureSetIndex, pbp);
-                    }
-                    catch (Exception e)
-                    {
-                        UpdateAndBindTexturesWithoutTemplate(cbs, program, pbp);
-                    }
+                    UpdateAndBindTexturesWithoutTemplate(cbs, program, pbp);
                 }
                 else
                 {
-                    try
-                    {
-                        UpdateAndBind(cbs, program, PipelineBase.TextureSetIndex, pbp);
-                    }
-                    catch (Exception e)
-                    {
-                        UpdateAndBindTexturesWithoutTemplate(cbs, program, pbp);
-                    }
+                    UpdateAndBind(cbs, program, PipelineBase.TextureSetIndex, pbp);
                 }
             }
 
@@ -914,7 +900,7 @@ namespace Ryujinx.Graphics.Vulkan
                         }
                     }
                 }
-                else if (setIndex == PipelineBase.ImageSetIndex)
+                else
                 {
                     if (!segment.IsArray)
                     {
@@ -980,6 +966,9 @@ namespace Ryujinx.Graphics.Vulkan
             };
 
             var dsc = program.GetNewDescriptorSetCollection(setIndex, out _).Get(cbs);
+
+            long updatedBindings = 0;
+            DescriptorSetTemplateWriter writer = _templateUpdater.Begin(32 * Unsafe.SizeOf<DescriptorBufferInfo>());
 
             foreach (ResourceBindingSegment segment in bindingSegments)
             {

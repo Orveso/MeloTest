@@ -722,7 +722,11 @@ namespace Ryujinx.Graphics.Vulkan
 
             SystemMemoryType memoryType;
 
+<<<<<<< HEAD
             if (IsSharedMemory && !IsMoltenVk)
+=======
+            if (IsSharedMemory)
+>>>>>>> metal/master
             {
                 memoryType = SystemMemoryType.UnifiedMemory;
             }

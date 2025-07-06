@@ -156,12 +156,15 @@ namespace Ryujinx.Ava.UI.Views.Input
                                     case "RightStickLeft":
                                         viewModel.Config.RightStickLeft = buttonValue.AsHidType<Key>();
                                         break;
+<<<<<<< HEAD
                                     case "ButtonCapture":
                                         viewModel.Config.ButtonCapture = buttonValue.AsHidType<Key>();
                                         break;
                                     case "ButtonHome":
                                         viewModel.Config.ButtonHome = buttonValue.AsHidType<Key>();
                                         break;
+=======
+>>>>>>> metal/master
                                 }
                             }
                         };

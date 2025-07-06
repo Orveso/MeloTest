@@ -49,6 +49,8 @@ namespace Ryujinx.Input.SDL2
         {
             Guid guid = SDL_JoystickGetDeviceGUID(joystickIndex);
 
+            // Add a unique identifier to the start of the GUID in case of duplicates.
+
             if (guid == Guid.Empty)
             {
                 return null;
@@ -65,10 +67,24 @@ namespace Ryujinx.Input.SDL2
             // Parse the joystick index from the ID string
             if (data.Length < 2 || !int.TryParse(data[0], out int joystickIndex))
             {
-                return -1;
+                int guidIndex = 0;
+                id = guidIndex + "-" + guid;
+
+                while (_gamepadsIds.Contains(id))
+                {
+                    id = (++guidIndex) + "-" + guid;
+                }
             }
 
-            return joystickIndex;
+            return id;
+        }
+
+        private int GetJoystickIndexByGamepadId(string id)
+        {
+            lock (_lock)
+            {
+                return _gamepadsIds.IndexOf(id);
+            }
         }
 
         private void HandleJoyStickDisconnected(int joystickInstanceId)

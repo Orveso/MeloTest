@@ -143,6 +143,7 @@ namespace Ryujinx.Ava.UI.Views.Main
                 };
 
                 await ViewModel.LoadApplication(applicationData, ViewModel.IsFullScreen || ViewModel.StartGamesInFullscreen);
+<<<<<<< HEAD
             }
         }
 
@@ -160,6 +161,8 @@ namespace Ryujinx.Ava.UI.Views.Main
                 };
 
                 await ViewModel.LoadApplication(applicationData, ViewModel.IsFullScreen || ViewModel.StartGamesInFullscreen);
+=======
+>>>>>>> metal/master
             }
         }
 
