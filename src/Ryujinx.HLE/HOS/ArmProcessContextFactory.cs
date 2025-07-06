@@ -4,6 +4,7 @@ using Ryujinx.Cpu;
 using Ryujinx.Cpu.AppleHv;
 using Ryujinx.Cpu.Jit;
 using Ryujinx.Cpu.LightningJit;
+using Ryujinx.Cpu.Nce;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Process;
@@ -43,6 +44,17 @@ namespace Ryujinx.HLE.HOS
             _codeSize = codeSize;
         }
 
+        public static NceCpuCodePatch CreateCodePatchForNce(KernelContext context, bool for64Bit, ReadOnlySpan<byte> textSection)
+        {
+            if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64 && for64Bit)
+            {
+                return NcePatcher.CreatePatch(textSection);
+            }
+
+            return null;
+        }
+
+
         public IProcessContext Create(KernelContext context, ulong pid, ulong addressSpaceSize, InvalidAccessHandler invalidAccessHandler, bool for64Bit)
         {
             IArmProcessContext processContext;
@@ -54,6 +66,16 @@ namespace Ryujinx.HLE.HOS
                 var cpuEngine = new HvEngine(_tickSource);
                 var memoryManager = new HvMemoryManager(context.Memory, addressSpaceSize, invalidAccessHandler);
                 processContext = new ArmProcessContext<HvMemoryManager>(pid, cpuEngine, _gpu, memoryManager, addressSpaceSize, for64Bit);
+            }
+            else if (OperatingSystem.IsIOS() && isArm64Host)
+            {
+                Logger.Info?.Print(LogClass.Cpu, $"NCE Base AS Address");
+
+                var cpuEngine = new NceEngine(_tickSource);
+                var memoryManagerHostTracked = new MemoryManagerHostTracked(context.Memory, addressSpaceSize, true, invalidAccessHandler);
+                processContext = new ArmProcessContext<MemoryManagerHostTracked>(pid, cpuEngine, _gpu, memoryManagerHostTracked, addressSpaceSize, for64Bit);
+                // var memoryManager = new MemoryManagerNative(context.Memory, addressSpaceSize, invalidAccessHandler);
+                // processContext = new ArmProcessContext<MemoryManagerNative>(pid, cpuEngine, _gpu, memoryManager, addressSpaceSize, for64Bit, memoryManager.ReservedSize);
             }
             else
             {
@@ -71,6 +93,7 @@ namespace Ryujinx.HLE.HOS
                     : new JitEngine(_tickSource);
 
                 AddressSpace addressSpace = null;
+                MemoryBlock asNoMirror = null;
 
                 // We want to use host tracked mode if the host page size is > 4KB.
                 if ((mode == MemoryManagerMode.HostMapped || mode == MemoryManagerMode.HostMappedUnsafe) && MemoryBlock.GetPageSize() <= 0x1000)

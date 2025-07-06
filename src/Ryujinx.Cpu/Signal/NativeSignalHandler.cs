@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Ryujinx.Cpu.Signal
 {
@@ -121,6 +122,21 @@ namespace Ryujinx.Cpu.Signal
             }
         }
 
+        public static void InstallUnixAlternateStackForCurrentThread(IntPtr stackPtr, ulong stackSize)
+        {
+            UnixSignalHandlerRegistration.RegisterAlternateStack(stackPtr, stackSize);
+        }
+
+        public static void UninstallUnixAlternateStackForCurrentThread()
+        {
+            UnixSignalHandlerRegistration.UnregisterAlternateStack();
+        }
+
+        public static void InstallUnixSignalHandler(int sigNum, IntPtr action)
+        {
+            UnixSignalHandlerRegistration.RegisterExceptionHandler(sigNum, action);
+        }
+
         private static IntPtr MapCode(ReadOnlySpan<byte> code)
         {
             Debug.Assert(_codeBlock == null);
@@ -182,3 +198,4 @@ namespace Ryujinx.Cpu.Signal
         }
     }
 }
+

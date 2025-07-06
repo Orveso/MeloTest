@@ -1,0 +1,26 @@
+diff a/src/Ryujinx.HLE/Loaders/Processes/ProcessLoaderHelper.cs b/src/Ryujinx.HLE/Loaders/Processes/ProcessLoaderHelper.cs	(rejected hunks)
+@@ -21,6 +22,7 @@ using Ryujinx.HLE.Loaders.Processes.Extensions;
+ using Ryujinx.Horizon.Common;
+ using Ryujinx.Horizon.Sdk.Arp;
+ using System;
++using System.Linq;
+ using System.Runtime.InteropServices;
+ using ApplicationId = LibHac.Ncm.ApplicationId;
+ 
+@@ -250,7 +252,7 @@ namespace Ryujinx.HLE.Loaders.Processes
+             ulong argsStart = 0;
+             uint argsSize = 0;
+             ulong codeStart = ((meta.Flags & 1) != 0 ? 0x8000000UL : 0x200000UL) + CodeStartOffset;
+-            uint codeSize = 0;
++            ulong codeSize = 0;
+ 
+             string[] buildIds = new string[executables.Length];
+ 
+@@ -264,6 +266,7 @@ namespace Ryujinx.HLE.Loaders.Processes
+                 }).ToUpper();
+             }
+ 
++            NceCpuCodePatch[] nsoPatch = new NceCpuCodePatch[executables.Length];
+             ulong[] nsoBase = new ulong[executables.Length];
+ 
+             for (int index = 0; index < executables.Length; index++)
